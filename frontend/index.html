@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Generator | Premium Assistant</title>
+    <!-- Tailwind CSS (CDN for zero-setup premium design) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            750: '#2d3748',
+                            850: '#1a202c',
+                            950: '#0a0a0a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #e5e5e5; }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        .spinner-dark {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top: 3px solid #000000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .shadow-premium {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] text-gray-300 antialiased min-h-screen selection:bg-gray-700 selection:text-white" x-data="emailApp()">
+    
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <header class="text-center mb-16 animate-fade-in relative">
+            <!-- Absolute History Button -->
+            <button @click="openHistory()" class="absolute top-0 right-0 lg:right-4 flex items-center bg-zinc-900 border border-zinc-800 shadow-sm text-gray-300 px-5 py-2.5 rounded-full hover:bg-zinc-800 hover:text-white transition-all font-bold active:scale-95">
+                <i data-lucide="history" class="w-4 h-4 mr-2"></i> History
+            </button>
+
+            <div class="inline-flex items-center bg-zinc-900 border border-zinc-800 text-gray-300 px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-6 shadow-sm">
+                <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-gray-400"></i> Powered by Dual AI
+            </div>
+            <h1 class="text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">
+                AI Email <span class="bg-gradient-to-r from-gray-200 to-gray-600 bg-clip-text text-transparent">Generator</span>
+            </h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto font-medium">
+                Draft professional, high-converting emails in seconds. A sleek, monolithic black & gray experience.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            <!-- Left: Configuration Form -->
+            <section class="bg-[#121212] rounded-[2.5rem] p-10 shadow-premium border border-zinc-800/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-800 via-gray-400 to-gray-800 opacity-20"></div>
+                <div class="flex items-center mb-8">
+                    <div class="p-3 bg-zinc-800 rounded-2xl text-white mr-4 shadow-inner">
+                        <i data-lucide="settings" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Configuration</h2>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-400 mb-3">What's the purpose?</label>
+                        <select x-model="formData.purpose" class="w-full bg-[#1a1a1a] border border-zinc-800 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-gray-600 focus:outline-none font-medium text-gray-200 transition-all">
+                            <option value="">Choose a purpose...</option>
+                            <option value="Sales Outreach">Sales Outreach</option>
+                            <option value="Networking">Networking</option>
+                            <option value="Follow-up Meeting">Follow-up Meeting</option>
+                            <option value="Job Application">Job Application</option>
+                            <option value="Request Recommendation">Request Recommendation</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-400 mb-3">Tone</label>
+                            <select x-model="formData.tone" class="w-full bg-[#1a1a1a] border border-zinc-800 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-gray-600 focus:outline-none font-medium text-gray-200 transition-all">
+                                <option value="Professional">Professional</option>
+                                <option value="Friendly">Friendly</option>
+                                <option value="Bold">Bold</option>
+                                <option value="Subtle">Subtle</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-400 mb-3">Audience</label>
+                            <input x-model="formData.audience" placeholder="e.g. CEO of a startup" class="w-full bg-[#1a1a1a] border border-zinc-800 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-gray-600 focus:outline-none font-medium text-gray-200 transition-all placeholder-gray-600">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-400 mb-3">Key Highlights</label>
+                        <textarea x-model="formData.points" rows="4" placeholder="Briefly describe what you want the email to say..." class="w-full bg-[#1a1a1a] border border-zinc-800 rounded-2xl px-5 py-5 focus:ring-2 focus:ring-gray-600 focus:outline-none font-medium text-gray-200 transition-all resize-none placeholder-gray-600"></textarea>
+                    </div>
+
+                    <p x-show="error" x-text="error" class="text-gray-300 bg-red-950/30 border border-red-900/50 p-3 rounded-xl text-sm font-bold animate-pulse"></p>
+
+                    <button @click="generateEmail()" :disabled="loading" class="w-full bg-white text-black p-5 rounded-2xl flex items-center justify-center font-bold text-lg hover:bg-gray-200 transition-all transform active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                        <template x-if="!loading">
+                            <span class="flex items-center">
+                                Generate Blueprint
+                                <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+                            </span>
+                        </template>
+                        <template x-if="loading">
+                            <span class="flex items-center">
+                                <div class="spinner-dark mr-3"></div>
+                                Processing...
+                            </span>
+                        </template>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right: Display Generated Blueprint -->
+            <section class="h-full">
+                <!-- Empty State -->
+                <div x-show="!result && !loading" class="h-full flex flex-col items-center justify-center bg-[#121212]/50 border-2 border-dashed border-zinc-800 rounded-[2.5rem] p-12 text-center">
+                    <div class="mb-6 p-6 bg-zinc-900 border border-zinc-800 rounded-3xl shadow-sm text-gray-500">
+                        <i data-lucide="file-text" class="w-16 h-16"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-300 mb-2">Ready for generation</h3>
+                    <p class="text-gray-500 font-medium">Configure your email and click the button to see the magic.</p>
+                </div>
+
+                <!-- Result Card -->
+                <div x-show="result || loading" class="h-full flex flex-col bg-[#121212] rounded-[2.5rem] shadow-premium border border-zinc-800 overflow-hidden transform transition-all" :class="loading ? 'opacity-50 scale-95' : 'opacity-100 scale-100'">
+                    <div class="p-8 border-b border-zinc-800/50 bg-[#161616] flex justify-between items-center">
+                        <div class="flex items-center text-white font-bold tracking-wide">
+                            <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-gray-400"></i> Blueprint Generated
+                        </div>
+                        <button @click="copyToClipboard()" class="flex items-center bg-zinc-800 px-4 py-2 border border-zinc-700 rounded-xl text-sm font-bold text-white hover:bg-zinc-700 transition-all shadow-sm active:scale-90">
+                            <i :data-lucide="copied ? 'check' : 'copy'" class="w-4 h-4 mr-2" :class="copied ? 'text-white' : 'text-gray-300'"></i>
+                            <span x-text="copied ? 'Copied' : 'Copy Email'"></span>
+                        </button>
+                    </div>
+
+                    <div class="p-10 flex-1 overflow-y-auto space-y-8">
+                        <div>
+                            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-extrabold mb-3 block">Subject Line</span>
+                            <div class="text-xl font-extrabold text-white border-l-4 border-gray-500 pl-6 py-2" x-text="result?.subject || 'Crafting the header...'"></div>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-extrabold mb-3 block">Email Body</span>
+                            <div class="text-gray-300 leading-relaxed font-medium whitespace-pre-wrap text-lg" x-text="result?.email || 'The AI is currently building your narrative across several layers of context...'"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-8 border-t border-zinc-800 bg-[#161616] text-center">
+                        <div class="text-gray-500 text-sm font-bold">Securely stored in SQLite database</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- History Sidebar Modal -->
+    <div x-show="showHistory" class="fixed inset-0 z-50 flex justify-end" style="display: none;">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity" @click="showHistory = false"></div>
+        
+        <!-- Sidebar Panel -->
+        <div class="relative w-full max-w-md bg-[#0a0a0a] border-l border-zinc-800 h-full shadow-2xl flex flex-col transform transition-transform" x-show="showHistory" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
+            
+            <div class="p-6 border-b border-zinc-800 flex items-center justify-between bg-[#121212]">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i data-lucide="clock" class="w-5 h-5 mr-3 text-gray-400"></i> Generation History
+                </h2>
+                <button @click="showHistory = false" class="p-2 bg-zinc-800 border border-zinc-700 rounded-full hover:bg-zinc-700 transition-colors text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                <template x-if="loadingHistory">
+                    <div class="flex justify-center py-10">
+                        <div class="spinner scale-125"></div>
+                    </div>
+                </template>
+                
+                <template x-if="!loadingHistory && historyData.length === 0">
+                    <div class="text-center py-12 text-gray-500 font-bold">
+                        No emails generated yet.<br>Generate your first one!
+                    </div>
+                </template>
+
+                <template x-for="item in historyData" :key="item.id">
+                    <div @click="loadFromHistory(item)" class="bg-[#121212] p-5 rounded-2xl shadow-sm border border-zinc-800 hover:border-gray-500 hover:bg-[#161616] transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white line-clamp-1 pr-4" x-text="item.subject"></h4>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider text-black bg-white px-2 py-1 rounded w-fit flex-shrink-0" x-text="item.tone"></span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3 truncate" x-text="'To: ' + item.audience"></p>
+                        <div class="text-sm text-gray-400 line-clamp-2 bg-[#1a1a1a] p-3 rounded-xl font-medium border border-zinc-800/50" x-text="item.email_body"></div>
+                        <div class="mt-3 text-[10px] text-white font-bold text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                            Click to reload &rarr;
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            lucide.createIcons();
+        });
+
+        function emailApp() {
+            return {
+                formData: {
+                    purpose: 'Sales Outreach',
+                    tone: 'Professional',
+                    audience: '',
+                    points: ''
+                },
+                result: null,
+                loading: false,
+                error: '',
+                copied: false,
+                
+                // History State
+                showHistory: false,
+                historyData: [],
+                loadingHistory: false,
+
+                async openHistory() {
+                    this.showHistory = true;
+                    this.loadingHistory = true;
+                    try {
+                        const response = await fetch('http://localhost:5000/api/history');
+                        this.historyData = await response.json();
+                    } catch (err) {
+                        console.error("Failed to load history", err);
+                    } finally {
+                        this.loadingHistory = false;
+                        setTimeout(() => lucide.createIcons(), 50);
+                    }
+                },
+
+                loadFromHistory(item) {
+                    this.formData.purpose = item.purpose || 'Sales Outreach';
+                    this.formData.tone = item.tone || 'Professional';
+                    this.formData.audience = item.audience || '';
+                    this.formData.points = item.points || '';
+                    
+                    this.result = {
+                        subject: item.subject,
+                        email: item.email_body
+                    };
+                    this.showHistory = false;
+                    setTimeout(() => lucide.createIcons(), 50);
+                },
+
+                async generateEmail() {
+                    // Reset
+                    this.error = "";
+                    this.result = null;
+                    
+                    if (!this.formData.audience || !this.formData.points) {
+                        this.error = "Please provide an audience and key highlights.";
+                        return;
+                    }
+
+                    this.loading = true;
+
+                    try {
+                        const response = await fetch('http://localhost:5000/api/generate-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.formData)
+                        });
+
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            this.result = data;
+                            // Re-init icons for result
+                            setTimeout(() => lucide.createIcons(), 100);
+                        } else {
+                            this.error = data.detail || "Something went wrong.";
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        this.error = "Connection failed. Please ensure the backend is running.";
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                copyToClipboard() {
+                    if (!this.result) return;
+                    const content = `Subject: ${this.result.subject}\n\n${this.result.email}`;
+                    navigator.clipboard.writeText(content);
+                    this.copied = true;
+                    setTimeout(() => { this.copied = false; lucide.createIcons(); }, 2000);
+                    // Refresh icon state
+                    setTimeout(() => lucide.createIcons(), 50);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

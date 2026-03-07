@@ -1,0 +1,53 @@
+# ========================
+# SECRET / ENVIRONMENT FILES
+# ========================
+.env
+*.env
+.env.local
+.env.production
+
+# ========================
+# PYTHON
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg-info/
+dist/
+build/
+*.egg
+.Python
+venv/
+env/
+.venv/
+
+# ========================
+# DATABASE (local only)
+# ========================
+*.db
+*.sqlite
+*.sqlite3
+
+# ========================
+# NODE / FRONTEND
+# ========================
+node_modules/
+dist/
+.DS_Store
+Thumbs.db
+
+# ========================
+# IDE / EDITOR
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ========================
+# LOGS
+# ========================
+*.log
+npm-debug.log*
