@@ -69,4 +69,3 @@ ai-email-generator/
 -   **Error Resilience**: Handles empty fields and API failures gracefully.
 
 ---
-Built with ❤️ by Antigravity AI
