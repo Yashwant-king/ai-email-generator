@@ -1,7 +1,5 @@
 fastapi
 uvicorn[standard]
 python-dotenv
-google-generativeai
 huggingface_hub
-requests
 pydantic

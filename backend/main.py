@@ -1,14 +1,14 @@
 import os
 import json
-import requests
+import re
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import google.generativeai as genai
 from dotenv import load_dotenv
 import sqlite3
 from typing import List
 from datetime import datetime
+from huggingface_hub import InferenceClient
 
 # Initialize SQLite database
 DB_PATH = "emails.db"
@@ -31,17 +31,16 @@ def init_db():
     conn.commit()
     conn.close()
 
-# 1. Load context and environment
+# Load environment
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 HF_API_KEY = os.getenv("HF_API_KEY")
 
 app = FastAPI()
 
-# 2. Enable CORS for local development
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,129 +49,113 @@ app.add_middleware(
 # Run DB initialization on startup
 init_db()
 
-# 3. Request Model
+# Request Model
 class EmailQuery(BaseModel):
     purpose: str
     tone: str
     audience: str
     points: str
 
-from huggingface_hub import InferenceClient
 
 def generate_with_hf(query: EmailQuery):
-    """Robust fallback using the official Python client"""
-    if not HF_API_KEY or "your_huggingface" in HF_API_KEY:
+    """Generate email using Hugging Face Inference API"""
+    if not HF_API_KEY:
         raise Exception("Hugging Face API key not configured")
 
     client = InferenceClient(api_key=HF_API_KEY)
 
-    # These models are confirmed available on HF free tier Inference API
+    # Models confirmed available on HF free tier
     hf_models = [
         "Qwen/Qwen2.5-72B-Instruct",
         "meta-llama/Llama-3.1-8B-Instruct",
         "microsoft/Phi-3.5-mini-instruct",
     ]
 
+    prompt = (
+        f"Write a professional email.\n"
+        f"Purpose: {query.purpose}\n"
+        f"Tone: {query.tone}\n"
+        f"Audience: {query.audience}\n"
+        f"Key Points: {query.points}\n\n"
+        f"Return ONLY a JSON object with two keys: 'subject' and 'email'. "
+        f"No extra text, no markdown, just the JSON."
+    )
+
     last_error = None
     for model_id in hf_models:
         try:
-            print(f"Trying HF Fallback with {model_id}...")
-            prompt = f"Write a professional email for {query.audience}. Tone: {query.tone}. Purpose: {query.purpose}. Key Points: {query.points}. Formatting: Do not include introductory text just the email subject and body."
+            print(f"Trying HF model: {model_id}...")
             messages = [{"role": "user", "content": prompt}]
-            
+
             response = client.chat_completion(
                 model=model_id,
                 messages=messages,
-                max_tokens=600,
+                max_tokens=700,
                 temperature=0.3
             )
-            
+
             content = response.choices[0].message.content.strip()
-            
-            # Try parsing as JSON if the model happened to return JSON
+
+            # Try to parse JSON from response
             try:
-                import re
                 json_match = re.search(r'\{[\s\S]*\}', content)
                 if json_match:
                     clean_json = json_match.group(0).replace('```json', '').replace('```', '')
                     return json.loads(clean_json)
             except Exception:
                 pass
-                
-            # If not valid JSON, intelligently extract subject and body
+
+            # Fallback: extract subject/body from plain text
             subject = "AI Generated Email"
             body = content
             lines = content.split('\n')
-            for i, line in enumerate(lines[:3]):
+            for i, line in enumerate(lines[:5]):
                 if line.lower().startswith('subject:'):
-                    subject = line[8:].strip()
+                    subject = line[8:].strip().replace('**', '')
                     body = '\n'.join(lines[i+1:]).strip()
                     break
-                    
-            return {"subject": subject.replace('**', ''), "email": body}
-            
+
+            return {"subject": subject, "email": body}
+
         except Exception as e:
-            last_error = f"HF {model_id} error: {e}"
+            last_error = f"{model_id}: {e}"
+            print(f"HF model {model_id} failed: {e}")
             continue
-    
-    raise Exception(f"All fallbacks failed. Last error: {last_error}")
 
-@app.post("/api/generate-email")
-async def generate_email(query: EmailQuery):
-    if not query.purpose or not query.audience or not query.points:
-        raise HTTPException(status_code=400, detail="Missing required fields")
+    raise Exception(f"All models failed. Last error: {last_error}")
 
-    # Tier 1: Gemini
-    try:
-        for model_name in ['gemini-1.5-flash', 'gemini-1.5-pro']:
-            try:
-                model = genai.GenerativeModel(model_name)
-                prompt = f"Email Purpose: {query.purpose}, Tone: {query.tone}, Audience: {query.audience}, Points: {query.points}. Return ONLY JSON subject & email body."
-                response = model.generate_content(prompt)
-                result = json.loads(response.text.replace('```json', '').replace('```', '').strip())
-                
-                # Save to database
-                try:
-                    conn = sqlite3.connect(DB_PATH)
-                    c = conn.cursor()
-                    c.execute('''
-                        INSERT INTO history (purpose, tone, audience, points, subject, email_body)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    ''', (query.purpose, query.tone, query.audience, query.points, result["subject"], result["email"]))
-                    conn.commit()
-                    conn.close()
-                except Exception as db_err:
-                    print(f"Failed to save to database: {db_err}")
-                
-                return result
-            except Exception as e:
-                print(f"Gemini {model_name} failed: {e}")
-                continue
-    except: pass
 
-    # Tier 2: Hugging Face Fallback
-    try:
-        result = generate_with_hf(query)
-    except Exception as err:
-        error_msg = str(err)
-        if "429" in error_msg:
-            error_msg = "All AI quota limits exceeded (Gemini & HF). Please wait 60 seconds."
-        raise HTTPException(status_code=500, detail=error_msg)
-
-    # Save to database
+def save_to_db(query: EmailQuery, result: dict):
+    """Save generated email to SQLite"""
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute('''
             INSERT INTO history (purpose, tone, audience, points, subject, email_body)
             VALUES (?, ?, ?, ?, ?, ?)
-        ''', (query.purpose, query.tone, query.audience, query.points, result["subject"], result["email"]))
+        ''', (query.purpose, query.tone, query.audience, query.points,
+              result.get("subject", ""), result.get("email", "")))
         conn.commit()
         conn.close()
     except Exception as e:
-        print(f"Failed to save to database: {e}")
+        print(f"DB save error: {e}")
 
-    return result
+
+@app.post("/api/generate-email")
+async def generate_email(query: EmailQuery):
+    if not query.purpose or not query.audience or not query.points:
+        raise HTTPException(status_code=400, detail="Missing required fields")
+
+    try:
+        result = generate_with_hf(query)
+        save_to_db(query, result)
+        return result
+    except Exception as err:
+        error_msg = str(err)
+        if "429" in error_msg:
+            error_msg = "API quota exceeded. Please wait a moment and try again."
+        raise HTTPException(status_code=500, detail=error_msg)
+
 
 @app.get("/api/history")
 async def get_history():
@@ -187,9 +170,11 @@ async def get_history():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/")
 async def root():
-    return {"message": "AI Email Backend Multi-Provider is Running!"}
+    return {"message": "AI Email Backend is Running! (Powered by Hugging Face)"}
+
 
 if __name__ == "__main__":
     import uvicorn
