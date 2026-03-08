@@ -66,10 +66,11 @@ def generate_with_hf(query: EmailQuery):
 
     client = InferenceClient(api_key=HF_API_KEY)
 
+    # These models are confirmed available on HF free tier Inference API
     hf_models = [
-        "meta-llama/Llama-3.2-3B-Instruct",
-        "mistralai/Mistral-Nemo-Instruct-2407",
-        "HuggingFaceH4/zephyr-7b-beta",
+        "Qwen/Qwen2.5-72B-Instruct",
+        "meta-llama/Llama-3.1-8B-Instruct",
+        "microsoft/Phi-3.5-mini-instruct",
     ]
 
     last_error = None
