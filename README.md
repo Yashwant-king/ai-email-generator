@@ -2,6 +2,8 @@
 
 A cutting-edge, full-stack AI platform that leverages **Google Gemini 1.5 Flash** and **Hugging Face (Llama 3 / Qwen)** to craft professional, high-converting emails in seconds. 
 
+### 🌐 [Live Demo](https://ai-email-generator-nwcvdcdjaeanj6tbwcghkj.streamlit.app/)
+
 This project is now "Dual-Stack", supporting both a modern JavaScript/React workflow and a streamlined Python/Streamlit workflow.
 
 ---
