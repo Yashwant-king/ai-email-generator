@@ -1,65 +1,52 @@
-# 🚀 AI Email Generator (End-to-End)
+# 🚀 AI Email Generator (Premium)
 
-A premium, full-stack AI platform that leverages **Google Gemini 1.5 Flash** to craft high-converting emails in seconds.
+A cutting-edge, full-stack AI platform that leverages **Google Gemini 1.5 Flash** and **Hugging Face (Llama 3 / Qwen)** to craft professional, high-converting emails in seconds. 
 
-## 🛠️ Tech Stack
--   **Frontend**: React (Vite) + Tailwind CSS OR **Streamlit** (Python)
--   **Backend**: Node.js + Express OR **FastAPI** (Python)
--   **AI Engine**: Google Generative AI (Gemini) & Hugging Face (Llama 3/Qwen)
+This project is now "Dual-Stack", supporting both a modern JavaScript/React workflow and a streamlined Python/Streamlit workflow.
 
 ---
 
-## 🏃‍♂️ How to Run Locally
-
-### 1. Prerequisites
--   Node.js installed (v18+)
--   A **Google Gemini API Key**. Get one [here](https://aistudio.google.com/app/apikey).
-
-### 2. Backend Setup
-1.  Navigate to the `backend` folder:
-    ```bash
-    cd backend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Create a `.env` file from the template:
-    ```bash
-    cp .env.example .env
-    ```
-4.  Open `.env` and add your `GEMINI_API_KEY`.
-5.  Start the backend server:
-    ```bash
-    node index.js
-    ```
-    *Server will be running at `http://localhost:5000`*
-
-### 3. Frontend Setup
-1.  Open a **new terminal** and navigate to the `frontend` folder:
-    ```bash
-    cd frontend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-    *Vite will provide a local URL (e.g., `http://localhost:5173`)*
+## ✨ Features
+-   **Multi-Model Intelligence**: Uses Gemini 1.5 Flash for high-speed drafting and Hugging Face (Qwen 72B / Llama 3.1) as a powerful alternative.
+-   **Dual Frontend Options**:
+    -   **Streamlit (Recommended)**: A sleek, dark-themed Python frontend for quick deployment and zero-JS overhead.
+    -   **React + Vite**: A high-performance, modular frontend for scalable web applications.
+-   **Smart History**: Automatically saves your generations to a local SQLite database.
+-   **Premium UI**: Custom CSS with glassmorphism, micro-animations, and a responsive design system.
 
 ---
 
-## 🐍 Alternative: Python + Streamlit (New)
-For a faster, pure-Python experience, we now support a Streamlit frontend.
+## 🛠️ Project Structure
+```text
+ai-email-generator/
+├── streamlit_app.py   # Primary Streamlit Dashboard (Python)
+├── requirements.txt   # Python Dependencies
+├── backend/           
+│   ├── main.py        # FastAPI Backend (Python)
+│   ├── index.js       # Express Backend (Node.js)
+│   ├── emails.db      # SQLite Generation History
+│   └── .env           # API Keys configuration
+├── frontend/          
+│   ├── src/           # React Source Code
+│   ├── index.html     # Alpine.js / CDN Version
+│   └── package.json   # Node build configuration
+└── render.yaml        # Deployment Blueprint (Render.com)
+```
+
+---
+
+## 🏃‍♂️ Quick Start (Streamlit)
+**The fastest way to get started.**
 
 1.  **Install dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
-2.  **Add your `HF_API_KEY`** to `backend/.env`.
+2.  **Configure API Keys**:
+    Open `backend/.env` and add your Hugging Face API key:
+    ```text
+    HF_API_KEY=your_key_here
+    ```
 3.  **Run the app**:
     ```bash
     streamlit run streamlit_app.py
@@ -67,18 +54,31 @@ For a faster, pure-Python experience, we now support a Streamlit frontend.
 
 ---
 
-## 📂 Project Structure
-```text
-ai-email-generator/
-├── backend/       # Express server & Gemini integration
-├── frontend/      # React application (Vite + Tailwind)
-└── api/           # Placeholder for shared API logic
-```
+## 🏗️ Technical Setup (Deep Dive)
 
-## ✨ Key Features
--   **Intelligent Prompting**: Custom logic ensures Gemini generates structured JSON for both subject and body.
--   **Premium UI**: Glassmorphism effects, micro-animations, and a responsive design system.
--   **One-Click Copy**: Instantly copy your generated email to the clipboard.
--   **Error Resilience**: Handles empty fields and API failures gracefully.
+### Python (FastAPI + Streamlit)
+-   **Backend**: `main.py` handles the logic for generation and DB storage.
+-   **Frontend**: `streamlit_app.py` provides the user interface.
+
+### Javascript (Express + React)
+1.  **Backend**:
+    ```bash
+    cd backend
+    npm install
+    node index.js
+    ```
+2.  **Frontend**:
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
 
 ---
+
+## 🚀 Deployment
+This project is configured for **Render.com**. Just connect your repository, and it will automatically deploy the Streamlit frontend using the provided `render.yaml`.
+
+---
+
+Build with ❤️ by [Yashwant Singh Chauhan](https://github.com/Yashwant-king)
