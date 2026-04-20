@@ -3,11 +3,9 @@
 A premium, full-stack AI platform that leverages **Google Gemini 1.5 Flash** to craft high-converting emails in seconds.
 
 ## 🛠️ Tech Stack
--   **Frontend**: React (Vite) + Tailwind CSS + Lucide Icons
--   **Backend**: Node.js + Express
--   **AI Engine**: Google Generative AI (Gemini API)
--   **State Management**: React Hooks
--   **API Communication**: REST via Axios
+-   **Frontend**: React (Vite) + Tailwind CSS OR **Streamlit** (Python)
+-   **Backend**: Node.js + Express OR **FastAPI** (Python)
+-   **AI Engine**: Google Generative AI (Gemini) & Hugging Face (Llama 3/Qwen)
 
 ---
 
@@ -51,6 +49,21 @@ A premium, full-stack AI platform that leverages **Google Gemini 1.5 Flash** to 
     npm run dev
     ```
     *Vite will provide a local URL (e.g., `http://localhost:5173`)*
+
+---
+
+## 🐍 Alternative: Python + Streamlit (New)
+For a faster, pure-Python experience, we now support a Streamlit frontend.
+
+1.  **Install dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+2.  **Add your `HF_API_KEY`** to `backend/.env`.
+3.  **Run the app**:
+    ```bash
+    streamlit run streamlit_app.py
+    ```
 
 ---
 

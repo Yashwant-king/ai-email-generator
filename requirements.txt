@@ -1,0 +1,7 @@
+streamlit
+fastapi
+uvicorn
+python-dotenv
+huggingface_hub
+pydantic
+pandas
